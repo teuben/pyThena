@@ -11,7 +11,7 @@ PYTHON = anaconda3
 
 # git directories we should have here
 
-GIT_DIRS = athena athenak
+GIT_DIRS = athenak
 
 # URLs that we'll need
 
@@ -21,10 +21,6 @@ URL2  = https://gitlab.com/theias/hpc/jmstone/athena-parthenon/athenak
 URL2  = https://gitlab.com/theias/hpc/jmstone/athena-parthenon/athena-mini-k
 URL2  = https://github.com/teuben/Athena-miniK
 URL3  = https://github.com/teuben/nemo
-URL4  = https://github.com/teuben/tkrun
-URL5a = https://github.com/teuben/agui
-URL5b = https://github.com/anhhcao/agui
-URL5c = https://github.com/KylieGong/agui
 
 # the ATHENA executable (from athena or athenak)
 # ATHENA = athena/bin/athena
@@ -82,8 +78,6 @@ python: nemo anaconda3
 anaconda3:
 	nemo/src/scripts/install_anaconda3
 
-tkrun:
-	git clone $(URL4)
 
 ## build_athenak:  build athenak
 build_athenak:	athenak
@@ -116,38 +110,19 @@ build_nemo:    nemo
 ## build_python:    build your private anaconda3
 build_python:  python
 
-# a few sample runs
+# a few sample benchmark runs
 
 ##
 
 ## run1:          example 1D linear_wave_hydro (athenak)   [ < 1sec  1069 cycles]
 run1:
-	$(TIME) $(ATHENA) -i linear_wave_hydro.athinput -d run1
+	$(TIME) $(ATHENA) -i athenak/inputs/linear_wave_hydro.athinput -d run1
 	@echo ./animate1 base=run1/tab/LinWave xcol=x1v ycol=velx
 
 ## run2:          example 2D orszag_tang (athenak) [ ~109"  1403 cycles]
 run2:
-	$(TIME) $(ATHENA) -i orszag_tang.athinput      -d run2
+	$(TIME) $(ATHENA) -i athenak/inputs/orszag_tang.athinput      -d run2
 	@echo ./animate1 base=run2/tab/Advect xcol=x1v ycol=dens
-
-
-
-#  We use past tense for old versions of athena :-)
-##  ran1 and ran2 are made by ATHENA++
-##  ran3 by good old AthenaC
-## ran1:          example athena++ linear_wave1d in vtk format
-ran1: athena
-	athena/bin/athena  -i inputs/hydro/athinput.linear_wave1d  -d ran1
-	@echo Results in ran1
-
-## ran2:          example athena++ linear_wave1d needed by some tests - will also build athena++
-ran2: athena
-	athena/bin/athena  -i inputs/hydro/athinput.linear_wave1d  -d ran2 output2/file_type=tab
-	@echo Results in ran2
-
-## ran3:          example AthenaC linear_wave1d needed by some tests - will also build athenac
-ran3: athenac
-	athenac/bin/athena  -i athenac/tst/1D-hydro/athinput.linear_wave1d  -d ran3
 
 
 
@@ -209,19 +184,7 @@ test13: athena_problems.json
 test14: athena_problems.json
 	./pyqt_menu.py
 
-## test15:        miniki version
+## test15:        mini-k version
 test15:
 	./pythena.py
 
-athena_problems.json:
-	./write_problems.py
-
-# collaborations
-agui_t:
-	git clone $(URL5a) agui_t
-
-agui_a:
-	git clone $(URL5b) agui_a
-
-agui_k:
-	git clone $(URL5c) agui_k

@@ -17,12 +17,12 @@ argparser.add_argument('-r', '--run',
 args = argparser.parse_args()
 
 # building gui
-with open('athena_problems.json') as problems_json:
-    problems = load(problems_json)
-
-
-athena_problems = list(problems['athenak'])
-athena_problems = list([])
+if False:
+    with open('athena_problems.json') as problems_json:
+        problems = load(problems_json)
+    athena_problems = list(problems['athenak'])
+else:
+    athena_problems = list([])
 
 class MainWindow(qw.QMainWindow):
     def __init__(self):
@@ -108,7 +108,7 @@ class MainWindow(qw.QMainWindow):
         self.problem = qw.QLineEdit(self)
         btn.clicked.connect(lambda: browse(self.problem))
         self.problem.setFixedWidth(250)
-        self.problem.setText('linear_wave_hydro.athinput')
+        self.problem.setText('athenak/inputs/linear_wave_hydro.athinput')
         load_layout.addWidget(btn)
         load_layout.addWidget(self.problem)
 

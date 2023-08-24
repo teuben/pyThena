@@ -7,6 +7,7 @@ from subprocess import Popen, PIPE
 from re import match
 from sys import argv
 from os import path
+from glob import glob
 
 # parse arguments
 argparser = ArgumentParser(description='Runs the GUI for configuring an athinput file')
@@ -16,13 +17,16 @@ argparser.add_argument('-r', '--run',
                        default=False)
 args = argparser.parse_args()
 
+athena_problems = {}
+
 # building gui
 if False:
     with open('athena_problems.json') as problems_json:
         problems = load(problems_json)
     athena_problems = list(problems['athenak'])
 else:
-    athena_problems = list([])
+    for file in glob('./athenak/inputs/*.athinput'):
+        athena_problems[file.split('/')[-1]] = file
 
 class MainWindow(qw.QMainWindow):
     def __init__(self):
@@ -98,7 +102,7 @@ class MainWindow(qw.QMainWindow):
 
         btn_group = qw.QButtonGroup()
 
-        self.load_radio = qw.QRadioButton('Load Problem:')
+        '''self.load_radio = qw.QRadioButton('Load Problem:')
         self.load_radio.setStyleSheet('font-weight: bold')
         self.load_radio.setChecked(True)
         load_layout.addWidget(self.load_radio)
@@ -110,18 +114,18 @@ class MainWindow(qw.QMainWindow):
         self.problem.setFixedWidth(250)
         self.problem.setText('athenak/inputs/linear_wave_hydro.athinput')
         load_layout.addWidget(btn)
-        load_layout.addWidget(self.problem)
+        load_layout.addWidget(self.problem)'''
 
-        self.predef_radio = qw.QRadioButton('Predefined Problem: [TBD]')
-        self.predef_radio.setStyleSheet('font-weight: bold')
-        predef_layout.addWidget(self.predef_radio)
+        self.l1 = qw.QLabel('Problems:')
+        self.l1.setStyleSheet('font-weight: bold')
+        predef_layout.addWidget(self.l1)
         self.combo = qw.QComboBox()
-        self.combo.addItems(athena_problems)
-        predef_layout.addStretch()
+        self.combo.addItems(list(athena_problems))
+        #predef_layout.addStretch()
         predef_layout.addWidget(self.combo)
 
-        btn_group.addButton(self.load_radio)
-        btn_group.addButton(self.predef_radio)
+        # btn_group.addButton(self.load_radio)
+        #btn_group.addButton(self.predef_radio)
         self.radio_groups.append(btn_group)
 
         page_layout.addLayout(radio_layout)
@@ -174,7 +178,7 @@ class MainWindow(qw.QMainWindow):
         w.close()
 
     def launch(self):
-        problem = problems[self.current_athena][self.combo.currentText()] if self.predef_radio.isChecked() else self.problem.text()
+        problem = athena_problems[self.combo.currentText()]
         cmd = './pythena_run.py %s -x %s %s' % (problem, 
                                                 self.athena,
                                                 '-r' if args.run else '')

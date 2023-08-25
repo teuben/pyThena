@@ -237,10 +237,13 @@ class MainWindow(qw.QMainWindow):
             #Popen(['python', 'plot1d.py', '-d', odir,         '--hst', '-n', info['problem'] + ' history'])
             cmd1 = 'python plot1d.py  -d %s/tab' % (odir)
             cmd2 = 'python plot1d.py  -d %s --hst' % (odir)
+            cmd3 = 'python plot2d.py  -d %s' % (odir)            
             print(cmd1)
             print(cmd2)
+            print(cmd3)
             Popen(cmd1.split())
             Popen(cmd2.split())
+            Popen(cmd3.split())
         else:
             w = DisplayWindow(cmd)
             self.windows.append(w)

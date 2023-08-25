@@ -68,7 +68,7 @@ build_athenak:	athenak
 # See also:   https://kokkos.github.io/kokkos-core-wiki/keywords.html#keywords-arch
 ARM = -D CMAKE_CXX_COMPILER=clang++-mp-15 -D CMAKE_C_COMPILER=clang-mp-15 -D Kokkos_ARCH_ARMV81=On
 arm:	athenak
-	(mkdir -p athenak/build; cd athenak/build; cmake $(B_ARM) ..; make -j 8)
+	(mkdir -p athenak/build; cd athenak/build; cmake $(ARM) ..; make -j 8)
 
 #PJT =  -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_C_COMPILER=clang -D Kokkos_ARCH_INTEL_DG1=On
 #PJT =  -D Kokkos_ARCH_INTEL_DG1=On

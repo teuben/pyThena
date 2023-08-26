@@ -35,8 +35,10 @@ class MainWindow(qw.QMainWindow):
         self.radio_groups = []
         self.windows = []
 
+        self.plot = True
+
         page_layout = qw.QVBoxLayout()
-        radio_layout = qw.QHBoxLayout()
+        radio_layout = qw.QVBoxLayout()
         exe_layout = qw.QHBoxLayout()
         load_layout = qw.QHBoxLayout()
         predef_layout = qw.QHBoxLayout()
@@ -54,6 +56,12 @@ class MainWindow(qw.QMainWindow):
         help_action.setToolTip('Open help menu')
         help_action.triggered.connect(self.help)
         toolbar.addAction(help_action)
+        toolbar.addSeparator()
+
+        clear_action = qw.QAction('Clear', self)
+        clear_action.setToolTip('Clears all Athena problem directories')
+        clear_action.triggered.connect(self.clear)
+        toolbar.addAction(clear_action)
         toolbar.addSeparator()
 
         quit_action = qw.QAction('Quit', self)
@@ -123,15 +131,23 @@ class MainWindow(qw.QMainWindow):
         self.combo.addItems(list(athena_problems))
         #predef_layout.addStretch()
         predef_layout.addWidget(self.combo)
+    
+        rbtn = qw.QRadioButton('Configure New')
+        rbtn.toggled.connect(lambda: self.plot = False)
+        radio_layout.addWidget(rbtn)
+        rbtn = qw.QRadioButton('Plot Existing')
+        rbtn.setChecked(True)        
+        rbtn.toggled.connect(lambda: self.plot = True)
+        radio_layout.addWidget(rbtn)
 
         # btn_group.addButton(self.load_radio)
         #btn_group.addButton(self.predef_radio)
         self.radio_groups.append(btn_group)
 
-        page_layout.addLayout(radio_layout)
         page_layout.addLayout(exe_layout)
         page_layout.addLayout(load_layout)
         page_layout.addLayout(predef_layout)
+        page_layout.addLayout(radio_layout)
         # checkbox
 
         if False:
@@ -161,6 +177,13 @@ class MainWindow(qw.QMainWindow):
             self.reconfig.setVisible(True)
         self.current_athena = type
         print("Current athena:",type)
+
+    def clear(self):
+        directories = glob('./*/')
+        for d in directories:
+            if path.exists(d + '.athena_prob_dir'):
+                Popen(['rm', '-rf', d])
+                
 
     def rebuild(self, problem):
         config = None

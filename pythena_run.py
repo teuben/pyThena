@@ -115,16 +115,16 @@ class MainWindow(qw.QMainWindow):
         l1.setToolTip('The directory where the output file will be dumped')
         self.outdirlayout.addWidget(l1)
         self.outdirlayout.addStretch()
-        btn = qw.QPushButton(self)
+        '''btn = qw.QPushButton(self)
         btn.setText("browse")
         def browse_dir(t):
             file = qw.QFileDialog.getExistingDirectory(self, "Select Directory", "")
-            t.setText(file)
+            t.setText(file)'''
         txt = qw.QLineEdit(self)
-        btn.clicked.connect(lambda: browse_dir(txt))
+        #btn.clicked.connect(lambda: browse_dir(txt))
         txt.setFixedWidth(250)
-        txt.setText(cwd)
-        self.outdirlayout.addWidget(btn)
+        txt.setText('run1')
+        #self.outdirlayout.addWidget(btn)
         self.outdirlayout.addWidget(txt)
 
         self.elmtlayout.addLayout(self.problayout)
@@ -180,9 +180,15 @@ class MainWindow(qw.QMainWindow):
         cmd = f'cp {args.file} {odir_input.text()}'
         print(cmd)
         Popen(cmd.split())
-        
+        bs = '/'
+        dot = '.'
         #cmd = f'{athena} -i {args.file} -d {odir_input.text()} output2/file_type=tab '
-        cmd = f'{athena} -i {args.file} -d {odir_input.text()} '
+        prob_dir = f'./{args.file.split(bs)[-1].split(dot)[0]}'
+        if not os.path.exists(prob_dir):
+            os.mkdir(prob_dir)
+        Popen(['touch', prob_dir + '/.athena_prob_dir'])
+        dirname = f'{prob_dir}/{odir_input.text()}'
+        cmd = f'{athena} -i {args.file} -d {dirname} '
 
         for k in self.data:
             e = data[k]
@@ -204,9 +210,9 @@ class MainWindow(qw.QMainWindow):
 
         print(cmd)
         # create odir (including intermediaries if needed)
-        odir = odir_input.text()
+        odir = dirname
         os.makedirs(odir,exist_ok=True)
-        hname = f'{odir_input.text()}/history'
+        hname = f'{dirname}/history'
         with open(hname, 'w') as file:
             file.write(cmd)
         
@@ -534,12 +540,12 @@ class ViewerWindow(qw.QMainWindow):
         toolbar.addAction(save_as_action)
         toolbar.addSeparator()
 
-        save_action = qw.QAction('Save', self)
+        '''save_action = qw.QAction('Save', self)
         save_action.setToolTip('Save changes to the original input file (Ctrl+s)')
         save_action.triggered.connect(self.save)
         save_action.setShortcut('Ctrl+s')
         toolbar.addAction(save_action)
-        toolbar.addSeparator()
+        toolbar.addSeparator()'''
 
         quit_action = qw.QAction('Quit', self)
         quit_action.setToolTip('Closes the editor')

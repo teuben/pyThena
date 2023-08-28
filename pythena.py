@@ -133,11 +133,11 @@ class MainWindow(qw.QMainWindow):
         predef_layout.addWidget(self.combo)
     
         rbtn = qw.QRadioButton('Configure New')
-        rbtn.toggled.connect(lambda: self.plot = False)
+        rbtn.toggled.connect(lambda: self.set_plot(True))
+        rbtn.setChecked(True)  
         radio_layout.addWidget(rbtn)
-        rbtn = qw.QRadioButton('Plot Existing')
-        rbtn.setChecked(True)        
-        rbtn.toggled.connect(lambda: self.plot = True)
+        rbtn = qw.QRadioButton('Plot Existing')      
+        rbtn.toggled.connect(lambda: self.set_plot(False))
         radio_layout.addWidget(rbtn)
 
         # btn_group.addButton(self.load_radio)
@@ -163,6 +163,9 @@ class MainWindow(qw.QMainWindow):
         scroll.setWidget(widget)
         self.resize(700, 300)
         self.setCentralWidget(scroll)
+
+    def set_plot(self, b):
+        self.plot = b
 
     def switch(self, type):
         self.combo.clear()
@@ -201,17 +204,27 @@ class MainWindow(qw.QMainWindow):
         w.close()
 
     def launch(self):
-        problem = athena_problems[self.combo.currentText()]
-        cmd = './pythena_run.py %s -x %s %s' % (problem, 
-                                                self.athena,
-                                                '-r' if args.run else '')
-        print(cmd)
-        try:
-            if not path.exists(problem):
-                raise FileNotFoundError
-            Popen(cmd.split())
-        except Exception as e:
-            print(e)
+        if self.plot:
+            problem = athena_problems[self.combo.currentText()]
+            cmd = './pythena_run.py %s -x %s %s' % (problem, 
+                                                    self.athena,
+                                                    '-r' if args.run else '')
+            print(cmd)
+            try:
+                if not path.exists(problem):
+                    raise FileNotFoundError
+                Popen(cmd.split())
+            except Exception as e:
+                print(e)
+        else:
+            folder = qw.QFileDialog.getExistingDirectory(self, "Select Problem Directory", "")
+            if folder:
+                cmd1 = 'python plot1d.py  -d %s/tab' % folder
+                cmd2 = 'python plot1d.py  -d %s --hst' % folder
+                print(cmd1)
+                print(cmd2)
+                Popen(cmd1.split())
+                Popen(cmd2.split())
 
     def help(self):
         w = HelpWindow()

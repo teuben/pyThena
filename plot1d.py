@@ -30,7 +30,7 @@ def animate(i):
     if xlim:
         ax.set_xlim(xlim)
         ax.set_ylim(ylim)
-    ax.plot(x, y)
+    ax.plot(x, y, '.' if use_dot else '-')
     if not xlim and args.fix: # just need to check one since its either both or none
         xlim = ax.get_xlim()
         ylim = ax.get_ylim()
@@ -154,6 +154,12 @@ def mouse_moved(e):
     elif not hard_paused:
         resume()
 
+def dotboxf(self):
+    global use_dot
+    use_dot = not use_dot
+    animate(current_frame)
+    fig.canvas.draw_idle()
+
 argparser = ArgumentParser(description='plots the athena tab files specified')
 argparser.add_argument('-d', '--dir', help='the athena run directory containing tab/ or *.tab files', required=True)
 argparser.add_argument('--hst', action='store_true', help='plots the hst file rather animating the tab files')
@@ -183,6 +189,7 @@ loop = False
 frame_sliding = False
 xlim = None
 ylim = None
+use_dot = False
 
 # plot settings
 left = 0.34
@@ -277,6 +284,11 @@ if not args.hst:
     bloop = Button(fig.add_axes([bstart + 2 * bwidth + 2 * bspace, 0.125, bwidth, bheight]), '$\u27F3$')
     bloop.on_clicked(loopf)
 
+    dotax = fig.add_axes([bstart + 3 * bwidth + 3 * bspace, 0.125, 0.2, bheight])
+    dotbox = CheckButtons(dotax, ['Use points'])
+    dotbox.on_clicked(dotboxf)
+    dotax.set_facecolor('white')
+
     # make slider nonlinear
     delay_slider = Slider(
         ax=fig.add_axes([0.18, 0.05, 0.65, 0.03]),
@@ -354,5 +366,10 @@ if not args.hst:
 
     # in order to pause the animation when using the frame slider
     fig.canvas.mpl_connect('motion_notify_event', mouse_moved)
+else:
+    dotax = fig.add_axes([0.1, 0.125, 0.2, 0.05])
+    dotbox = CheckButtons(dotax, ['Use points'])
+    dotbox.on_clicked(dotboxf)
+    dotax.set_facecolor('white')
 
 plt.show()

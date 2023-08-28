@@ -7,6 +7,7 @@ from subprocess import Popen, PIPE
 from re import match
 from sys import argv
 from os import path
+from glob import glob
 
 # parse arguments
 argparser = ArgumentParser(description='Runs the GUI for configuring an athinput file')
@@ -16,13 +17,16 @@ argparser.add_argument('-r', '--run',
                        default=False)
 args = argparser.parse_args()
 
+athena_problems = {}
+
 # building gui
 if False:
     with open('athena_problems.json') as problems_json:
         problems = load(problems_json)
     athena_problems = list(problems['athenak'])
 else:
-    athena_problems = list([])
+    for file in glob('./athenak/inputs/*.athinput'):
+        athena_problems[file.split('/')[-1]] = file
 
 class MainWindow(qw.QMainWindow):
     def __init__(self):
@@ -31,8 +35,10 @@ class MainWindow(qw.QMainWindow):
         self.radio_groups = []
         self.windows = []
 
+        self.plot = True
+
         page_layout = qw.QVBoxLayout()
-        radio_layout = qw.QHBoxLayout()
+        radio_layout = qw.QVBoxLayout()
         exe_layout = qw.QHBoxLayout()
         load_layout = qw.QHBoxLayout()
         predef_layout = qw.QHBoxLayout()
@@ -50,6 +56,12 @@ class MainWindow(qw.QMainWindow):
         help_action.setToolTip('Open help menu')
         help_action.triggered.connect(self.help)
         toolbar.addAction(help_action)
+        toolbar.addSeparator()
+
+        clear_action = qw.QAction('Clear', self)
+        clear_action.setToolTip('Clears all Athena problem directories')
+        clear_action.triggered.connect(self.clear)
+        toolbar.addAction(clear_action)
         toolbar.addSeparator()
 
         quit_action = qw.QAction('Quit', self)
@@ -98,7 +110,7 @@ class MainWindow(qw.QMainWindow):
 
         btn_group = qw.QButtonGroup()
 
-        self.load_radio = qw.QRadioButton('Load Problem:')
+        '''self.load_radio = qw.QRadioButton('Load Problem:')
         self.load_radio.setStyleSheet('font-weight: bold')
         self.load_radio.setChecked(True)
         load_layout.addWidget(self.load_radio)
@@ -110,24 +122,32 @@ class MainWindow(qw.QMainWindow):
         self.problem.setFixedWidth(250)
         self.problem.setText('athenak/inputs/linear_wave_hydro.athinput')
         load_layout.addWidget(btn)
-        load_layout.addWidget(self.problem)
+        load_layout.addWidget(self.problem)'''
 
-        self.predef_radio = qw.QRadioButton('Predefined Problem: [TBD]')
-        self.predef_radio.setStyleSheet('font-weight: bold')
-        predef_layout.addWidget(self.predef_radio)
+        self.l1 = qw.QLabel('Problems:')
+        self.l1.setStyleSheet('font-weight: bold')
+        predef_layout.addWidget(self.l1)
         self.combo = qw.QComboBox()
-        self.combo.addItems(athena_problems)
-        predef_layout.addStretch()
+        self.combo.addItems(list(athena_problems))
+        #predef_layout.addStretch()
         predef_layout.addWidget(self.combo)
+    
+        rbtn = qw.QRadioButton('Configure New')
+        rbtn.toggled.connect(lambda: self.set_plot(True))
+        rbtn.setChecked(True)  
+        radio_layout.addWidget(rbtn)
+        rbtn = qw.QRadioButton('Plot Existing')      
+        rbtn.toggled.connect(lambda: self.set_plot(False))
+        radio_layout.addWidget(rbtn)
 
-        btn_group.addButton(self.load_radio)
-        btn_group.addButton(self.predef_radio)
+        # btn_group.addButton(self.load_radio)
+        #btn_group.addButton(self.predef_radio)
         self.radio_groups.append(btn_group)
 
-        page_layout.addLayout(radio_layout)
         page_layout.addLayout(exe_layout)
         page_layout.addLayout(load_layout)
         page_layout.addLayout(predef_layout)
+        page_layout.addLayout(radio_layout)
         # checkbox
 
         if False:
@@ -144,6 +164,9 @@ class MainWindow(qw.QMainWindow):
         self.resize(700, 300)
         self.setCentralWidget(scroll)
 
+    def set_plot(self, b):
+        self.plot = b
+
     def switch(self, type):
         self.combo.clear()
         if type == 'athena':
@@ -157,6 +180,12 @@ class MainWindow(qw.QMainWindow):
             self.reconfig.setVisible(True)
         self.current_athena = type
         print("Current athena:",type)
+
+    def clear(self):
+        directories = glob('./*/')
+        for d in directories:
+            if path.exists(d + '.athena_prob_dir'):
+                Popen(['rm', '-rf', d])
 
     def rebuild(self, problem):
         config = None
@@ -174,17 +203,27 @@ class MainWindow(qw.QMainWindow):
         w.close()
 
     def launch(self):
-        problem = problems[self.current_athena][self.combo.currentText()] if self.predef_radio.isChecked() else self.problem.text()
-        cmd = './pythena_run.py %s -x %s %s' % (problem, 
-                                                self.athena,
-                                                '-r' if args.run else '')
-        print(cmd)
-        try:
-            if not path.exists(problem):
-                raise FileNotFoundError
-            Popen(cmd.split())
-        except Exception as e:
-            print(e)
+        if self.plot:
+            problem = athena_problems[self.combo.currentText()]
+            cmd = './pythena_run.py %s -x %s %s' % (problem, 
+                                                    self.athena,
+                                                    '-r' if args.run else '')
+            print(cmd)
+            try:
+                if not path.exists(problem):
+                    raise FileNotFoundError
+                Popen(cmd.split())
+            except Exception as e:
+                print(e)
+        else:
+            folder = qw.QFileDialog.getExistingDirectory(self, "Select Problem Directory", "")
+            if folder:
+                cmd1 = 'python plot1d.py  -d %s/tab' % folder
+                cmd2 = 'python plot1d.py  -d %s --hst' % folder
+                print(cmd1)
+                print(cmd2)
+                Popen(cmd1.split())
+                Popen(cmd2.split())
 
     def help(self):
         w = HelpWindow()

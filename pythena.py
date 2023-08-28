@@ -186,7 +186,6 @@ class MainWindow(qw.QMainWindow):
         for d in directories:
             if path.exists(d + '.athena_prob_dir'):
                 Popen(['rm', '-rf', d])
-                
 
     def rebuild(self, problem):
         config = None

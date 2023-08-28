@@ -24,6 +24,7 @@ class MainWindow(qw.QMainWindow):
         self.radio_groups = []
         self.sliders = {}
         self.input={}
+        self.links={}
 
         self.forced_slider = False
 
@@ -189,6 +190,10 @@ class MainWindow(qw.QMainWindow):
         Popen(['touch', prob_dir + '/.athena_prob_dir'])
         dirname = f'{prob_dir}/{odir_input.text()}'
         cmd = f'{athena} -i {args.file} -d {dirname} '
+        values = {}
+        d, _, _ = parse(lines, silent=True, all=True)
+        for k in d:
+            values[k] = d[k]['value']
 
         for k in self.data:
             e = data[k]
@@ -197,17 +202,24 @@ class MainWindow(qw.QMainWindow):
             if t == 'RADIO':
                 for r in self.input[k]:
                     if r.isChecked():
-                        cmd += f'{k}={r.text()} '
+                        values[k] = r.text()
+                        cmd += f'{k}={values[k]} '
                         break
             elif t == 'CHECK' and self.input[k]:
-                cmd += f'{k}='
+                values[k] = ''
                 for c in self.input[k]:
                     if c.isChecked():
-                        cmd += f'{c.text()},'
-                cmd = cmd[:-1] + ' '
-            else:
-                cmd += '%s=%s ' % (k, self.input[k].text())
+                        values += f'{c.text()},'
+                values[k] = values[k][:-1]
+                cmd += f'{k}={values[k]} '
+            elif not t == 'LINK':
+                values[k] = self.input[k].text()
+                cmd += '%s=%s ' % (k, values[k])
 
+        for k in self.links:
+            v = values[k] = values[self.links[k]]
+            cmd += f'{k}={v} '
+        print(self.links)
         print(cmd)
         # create odir (including intermediaries if needed)
         odir = dirname
@@ -434,6 +446,10 @@ class MainWindow(qw.QMainWindow):
                 group_layout.addWidget(slider)
                 self.elmtlayout.addLayout(group_layout)
                 self.input[k] = label_slider
+
+            elif t == 'LINK':
+                gparams = e['gparams']
+                self.links[k] = gparams if '/' in gparams else (k.split('/')[0] + '/' + gparams)
 
     def update_slider(self, value, key):
         try:

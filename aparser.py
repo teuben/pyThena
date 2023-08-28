@@ -1,12 +1,13 @@
 from re import match
+from warnings import warn
 
 # ^\s*((?:set)\s+)?([^#]+)\s*=([^#]+)(#.*)?#>\s+([^\s]+)(.*=[^\s]*)?(.+)?$
 # requires that each line has a #>
-def parse_generic(filename, silent=False):
+def parse_generic(filename, silent=False, all=False):
     with open(filename) as file:
-        return parse_s(file.readlines(), filename=filename, silent=silent)
+        return parse_s(file.readlines(), filename=filename, silent=silent, all=all)
 
-def parse_s(lines, filename=None, silent=False):
+def parse_s(lines, filename=None, silent=False, all=False):
     #lines = file.readlines()
     recognized = ['.sh', '.csh', '.py', '.athinput'] # recognized filetypes
     data = {} # data from the file
@@ -47,7 +48,10 @@ def parse_s(lines, filename=None, silent=False):
         # group 5 -> GUI type
         # group 6 -> either old csh (repeated) name=value or empty; can be ignored
         # group 7 -> GUI params
-        m = match('^\s*(set\s+)?([^#]+)\s*=([^#]+)(#.*)?#>\s+([^\s]+)(.*=[^\s]*)?(.+)?$', line)
+        regex = '^\s*(set\s+)?([^#]+)\s*=([^#]+)(#.*)?#>\s+([^\s]+)(.*=[^\s]*)?(.+)?$'
+        if all:
+            regex = '^\s*(set\s+)?([^#]+)\s*=([^#]+)(#.*)?(?:#>\s+([^\s]+)(.*=[^\s]*)?(.+)?$)?'
+        m = match(regex, line)
         if m:
             
             # attempt to deduce type if not already known
@@ -60,8 +64,9 @@ def parse_s(lines, filename=None, silent=False):
             
             # process data
             help = m.group(4)
+            gtype = m.group(5)
             gparams = m.group(7)
-            value = m.group(3).strip()
+            value = m.group(3).strip() # guaranteed to always be there
             
             # unwrap value if it is in quotes
             if match('^\'.*\'|\".*\"$', value):
@@ -75,7 +80,7 @@ def parse_s(lines, filename=None, silent=False):
             data[f'{block}{m.group(2).strip()}'] = {
                 'value': value,
                 'help': '' if not help else help.strip(),
-                'gtype': m.group(5).strip(),
+                'gtype': '' if not gtype else gtype.strip(),
                 'gparams': '' if not gparams else gparams.strip()
             }
             continue
@@ -98,6 +103,7 @@ def parse_s(lines, filename=None, silent=False):
 
 # parses the athinput file and returns a dictionary
 def parse(filename):
+    warn('This method is deprecated. Use parse instead.', DeprecationWarning, stacklevel=2)
     file = open(filename, 'r')
     lines = file.readlines()
     data = {}

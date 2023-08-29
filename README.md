@@ -18,23 +18,25 @@ a generic install:
 
       make build_athenak
 
-and here an example install for a Mac M1:
+and here an example install for a specific Mac/M1 case we encountered:
 
       make arm
 
-If all of this fails to build athena, study the Makefile ARM= macro and find a good
-compile option. More to follow here on installation guidelines, link to
+If all of this fails to build athena, study the Makefile **ARM=** macro and find a good
+compile option for your case. More to follow here on installation guidelines, link to
 athenak wiki, etc.
 
 
 
 ## anaconda3 python
 
-Few words on installing anaconda3. This can be done within **pyThena**, here's an example
+Few words on installing anaconda3? Of you don't have something running already,
+this could be done within **pyThena** as well. 
 
       make build_python
       source anaconda3/python_start.sh
 
+this works for both Linux and Mac (I/M)
 
 ## Running
 

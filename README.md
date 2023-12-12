@@ -9,6 +9,13 @@ from **Athena-miniK**.
 more generic [agui](https://github.com/teuben/agui), which is still under
 development.
 
+For completeness, here are the different versions of Athena, but note **pyThena**
+is only formally supported to use Athena-miniK
+
+* Athena:  https://github.com/teuben/Athena-Cversion
+* Athena++:  https://www.athena-astro.app/
+* AthenaK: https://gitlab.com/theias/hpc/jmstone/athena-parthenon/athenak
+* Athena-miniK:  https://github.com/teuben/Athena-miniK
 
 ## Installation
 
@@ -67,3 +74,6 @@ something *could* fail:
 
 Notice that at several stages the actual terminal commands that are being executed are written to the screen.
 
+## Authors
+
+pyThena was developed by Anh Cao, in collaboration with Peter Teuben (summer 2023)
